@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/pwa_go_no_go/',
   plugins: [
     react(),
     tailwindcss(),

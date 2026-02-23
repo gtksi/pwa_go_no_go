@@ -1,4 +1,37 @@
-# React + TypeScript + Vite
+# PWA Go/No-Go & Stroop Task Training
+
+A Progressive Web App (PWA) designed for cognitive training, combining the classic Go/No-Go task with Stroop interference for advanced levels.
+
+## 🎮 Game Rules & Basic Specifications
+
+### 🎯 Objective
+Improve impulse control and cognitive flexibility by correctly responding to "Go" stimuli and inhibiting responses to "No-Go" stimuli.
+
+### 🧠 Core Mechanics (Go/No-Go)
+* **Go Stimulus**: An indicator (e.g., a green circle or a specific shape). You must tap/click the screen as quickly as possible.
+* **No-Go Stimulus**: An indicator (e.g., a red cross or a different shape). You must **NOT** tap/click the screen.
+* **Input**: Tapping anywhere on the screen or pressing the spacebar.
+
+### 🔄 Progression & Difficulty
+The game consists of multiple levels, with the difficulty naturally scaling up.
+* Each Level consists of 2 Rounds.
+* A Round consists of a set of 10 trials (stimulus presentations).
+* **Bag System**: To ensure controlled randomness, each block of 10 trials contains a guaranteed ratio of 8 Go stimuli to 2 No-Go stimuli (80% Go / 20% No-Go). This creates a strong "pre-potent" urge to respond, making the No-Go trials more challenging.
+
+#### Level Scaling
+As the level increases, the time limits become stricter:
+* **Stimulus Duration**: The amount of time the stimulus is visible decreases.
+* **Inter-Stimulus Interval (ISI)**: The pause between stimuli becomes shorter and more variable.
+
+### 🎨 Advanced Levels: Stroop Interference (Level 5+)
+From Level 5 onwards, the Stroop task rules are introduced to increase cognitive load.
+* Instead of simple shapes/colors, the stimulus might be a word (e.g., "RED", "GREEN", "BLUE").
+* The word itself will be painted in a color (which may or may not match the text).
+* **New Rule Example**: 
+  * "Go" if the **text color** matches the **word meaning** (Congruent).
+  * "No-Go" if the **text color** does NOT match the **word meaning** (Incongruent).
+
+## 🛠️ Development Setup
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
