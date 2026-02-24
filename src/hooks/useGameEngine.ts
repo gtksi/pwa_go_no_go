@@ -27,6 +27,8 @@ const initialStats: GameStats = {
 export const useGameEngine = () => {
     const [gameState, setGameState] = useState<GameState>({
         level: 1,
+        targetLevel: 1,
+        isCalibration: false,
         progress: 0,
         maxProgress: 10,
         currentRound: 1,
@@ -132,11 +134,11 @@ export const useGameEngine = () => {
     }, []);
 
     const executeFail = (reason: 'miss' | 'falseAlarm') => {
-        audioController.playSound('failure');
+        audioController.playSound(reason as any);
         setGameState(prev => ({
             ...prev,
             progress: 0,
-            feedback: 'failure',
+            feedback: reason,
             currentRound: prev.currentRound,
             stats: {
                 ...prev.stats,
@@ -159,9 +161,17 @@ export const useGameEngine = () => {
             let nextLevel = prev.level;
             let nextIsPlaying = prev.isPlaying;
             let nextIsGameOver = prev.isGameOver;
+            let nextIsCalibration = prev.isCalibration;
 
             if (nextProgress >= prev.maxProgress) {
-                if (nextRound === 1) {
+                if (prev.isCalibration) {
+                    // キャリブレーションは1ラウンドのみ
+                    nextLevel = prev.targetLevel;
+                    nextRound = 1;
+                    nextProgress = 0;
+                    nextIsPlaying = false;
+                    nextIsCalibration = false;
+                } else if (nextRound === 1) {
                     // Round 2へ
                     nextRound = 2;
                     nextProgress = 0;
@@ -186,6 +196,7 @@ export const useGameEngine = () => {
                 level: nextLevel,
                 isPlaying: nextIsPlaying,
                 isGameOver: nextIsGameOver,
+                isCalibration: nextIsCalibration,
                 feedback: 'success',
                 stats: {
                     ...prev.stats,
@@ -212,10 +223,30 @@ export const useGameEngine = () => {
         }
     };
 
-    const startGame = useCallback(() => {
+    const startGame = useCallback((startLevel?: number) => {
         audioController.playSound('success'); // プレイ開始音
         setGameState(prev => {
             const isRestart = prev.isGameOver;
+            let newLevel = prev.level;
+            let newTargetLevel = prev.targetLevel;
+            let newIsCalibration = prev.isCalibration;
+
+            if (startLevel !== undefined) {
+                if (startLevel >= 2) {
+                    newLevel = 1;
+                    newTargetLevel = startLevel;
+                    newIsCalibration = true;
+                } else {
+                    newLevel = startLevel;
+                    newTargetLevel = startLevel;
+                    newIsCalibration = false;
+                }
+            } else if (isRestart) {
+                newLevel = 1;
+                newTargetLevel = 1;
+                newIsCalibration = false;
+            }
+
             return {
                 ...prev,
                 isPlaying: true,
@@ -223,8 +254,10 @@ export const useGameEngine = () => {
                 progress: 0,
                 currentRound: 1,
                 feedback: null,
-                level: isRestart ? 1 : prev.level,
-                stats: isRestart || prev.level === 1 ? { ...initialStats } : prev.stats
+                level: newLevel,
+                targetLevel: newTargetLevel,
+                isCalibration: newIsCalibration,
+                stats: isRestart || (startLevel !== undefined) ? { ...initialStats } : prev.stats
             };
         });
         bagRef.current = [];
@@ -246,6 +279,8 @@ export const useGameEngine = () => {
     const quitToTitle = useCallback(() => {
         setGameState({
             level: 1,
+            targetLevel: 1,
+            isCalibration: false,
             progress: 0,
             maxProgress: 10,
             currentRound: 1,

@@ -31,6 +31,18 @@ From Level 5 onwards, the Stroop task rules are introduced to increase cognitive
   * "Go" if the **text color** matches the **word meaning** (Congruent).
   * "No-Go" if the **text color** does NOT match the **word meaning** (Incongruent).
 
+## 🆕 Update History (更新履歴)
+
+### 2026-02-24
+* **Level Selection**: Added the ability to choose a starting level from the title screen.
+* **Calibration Phase (準備運動)**: Automatically inserts a 1-round Level 1 "warm-up" phase when starting from Level 2 or higher to establish a baseline reaction speed.
+* **Feedback UX Enhancements**:
+  * **Omission Error (Miss/遅延)**: The target fades out silently, representing a lapse in attention.
+  * **Commission Error (False Alarm/誤タップ)**: Triggers a screen shake, local burst effect, and a dull "thud" sound, representing impulsive action.
+* **Advanced Logging**:
+  * Reaction Times (RT) are now calculated using the **Median** instead of the Mean to exclude outliers.
+  * The result screen now categorizes errors into Omission and Commission.
+
 ## 🛠️ Development Setup
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

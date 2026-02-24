@@ -20,6 +20,8 @@ export interface GameStats {
 
 export interface GameState {
     level: number;
+    targetLevel: number;
+    isCalibration: boolean;
     progress: number;
     maxProgress: number;
     currentRound: 1 | 2;
@@ -27,6 +29,6 @@ export interface GameState {
     isGameOver: boolean;
     stimulus: StimulusDefinition | null;
     isStimulusVisible: boolean;
-    feedback: 'success' | 'failure' | null;
+    feedback: 'success' | 'miss' | 'falseAlarm' | null;
     stats: GameStats;
 }
