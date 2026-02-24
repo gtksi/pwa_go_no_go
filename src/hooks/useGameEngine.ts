@@ -2,6 +2,15 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { GameState, StimulusDefinition, GameStats } from '../types/game';
 import { audioController } from '../utils/audio';
 
+export const calculateMedianRT = (reactionTimes: number[]): number => {
+    const validRTs = reactionTimes.filter(rt => rt >= 150).sort((a, b) => a - b);
+    if (validRTs.length === 0) return 0;
+    const mid = Math.floor(validRTs.length / 2);
+    return validRTs.length % 2 !== 0
+        ? validRTs[mid]
+        : Math.round((validRTs[mid - 1] + validRTs[mid]) / 2);
+};
+
 const LEVEL_CONFIGS = [
     { level: 1, cycle: 1500, hasStroop: false, isJitter: false },
     { level: 2, cycle: 1400, hasStroop: false, isJitter: false },
@@ -22,6 +31,7 @@ const initialStats: GameStats = {
     nogoSuccess: 0,
     missCount: 0,
     falseAlarmCount: 0,
+    baselineMedianRT: null,
 };
 
 export const useGameEngine = () => {
@@ -34,6 +44,7 @@ export const useGameEngine = () => {
         currentRound: 1,
         isPlaying: false,
         isGameOver: false,
+        clearStatus: null,
         stimulus: null,
         isStimulusVisible: false,
         feedback: null,
@@ -135,17 +146,52 @@ export const useGameEngine = () => {
 
     const executeFail = (reason: 'miss' | 'falseAlarm') => {
         audioController.playSound(reason as any);
-        setGameState(prev => ({
-            ...prev,
-            progress: 0,
-            feedback: reason,
-            currentRound: prev.currentRound,
-            stats: {
+        setGameState(prev => {
+            const nextProgress = Math.max(0, prev.progress - 1);
+            const isGameOver = nextProgress === 0;
+            const updatedStats = {
                 ...prev.stats,
                 missCount: prev.stats.missCount + (reason === 'miss' ? 1 : 0),
                 falseAlarmCount: prev.stats.falseAlarmCount + (reason === 'falseAlarm' ? 1 : 0)
+            };
+
+            if (isGameOver) {
+                if (prev.isCalibration) {
+                    return {
+                        level: 1,
+                        targetLevel: 1,
+                        isCalibration: false,
+                        progress: 0,
+                        maxProgress: 10,
+                        currentRound: 1,
+                        isPlaying: false,
+                        isGameOver: false,
+                        clearStatus: null,
+                        stimulus: null,
+                        isStimulusVisible: false,
+                        feedback: null,
+                        stats: { ...initialStats },
+                    };
+                }
+                return {
+                    ...prev,
+                    progress: nextProgress,
+                    feedback: reason,
+                    isPlaying: false,
+                    isGameOver: true,
+                    clearStatus: 'gameOver',
+                    stats: updatedStats
+                };
             }
-        }));
+
+            return {
+                ...prev,
+                progress: nextProgress,
+                feedback: reason,
+                currentRound: prev.currentRound,
+                stats: updatedStats
+            };
+        });
 
         nextStageTimerRef.current = window.setTimeout(() => {
             if (stateRef.current.isPlaying) scheduleNextStimulus();
@@ -161,31 +207,32 @@ export const useGameEngine = () => {
             let nextLevel = prev.level;
             let nextIsPlaying = prev.isPlaying;
             let nextIsGameOver = prev.isGameOver;
+            let nextClearStatus = prev.clearStatus;
             let nextIsCalibration = prev.isCalibration;
+
+            const nextReactionTimes = reactionTime ? [...prev.stats.reactionTimes, reactionTime] : prev.stats.reactionTimes;
+            let nextStats = {
+                ...prev.stats,
+                goSuccess: prev.stats.goSuccess + (type === 'go' ? 1 : 0),
+                nogoSuccess: prev.stats.nogoSuccess + (type === 'nogo' ? 1 : 0),
+                reactionTimes: nextReactionTimes
+            };
 
             if (nextProgress >= prev.maxProgress) {
                 if (prev.isCalibration) {
-                    // キャリブレーションは1ラウンドのみ
                     nextLevel = prev.targetLevel;
                     nextRound = 1;
                     nextProgress = 0;
                     nextIsPlaying = false;
                     nextIsCalibration = false;
+                    nextStats = { ...initialStats, baselineMedianRT: calculateMedianRT(nextReactionTimes) };
                 } else if (nextRound === 1) {
-                    // Round 2へ
                     nextRound = 2;
                     nextProgress = 0;
                 } else {
-                    // Level Up
-                    if (nextLevel < 9) {
-                        nextLevel++;
-                        nextRound = 1;
-                        nextProgress = 0;
-                        nextIsPlaying = false; // 一旦停止して手動再開
-                    } else {
-                        nextIsPlaying = false;
-                        nextIsGameOver = true; // All levels clear
-                    }
+                    nextIsPlaying = false;
+                    nextIsGameOver = true;
+                    nextClearStatus = 'clear';
                 }
             }
 
@@ -196,14 +243,10 @@ export const useGameEngine = () => {
                 level: nextLevel,
                 isPlaying: nextIsPlaying,
                 isGameOver: nextIsGameOver,
+                clearStatus: nextClearStatus,
                 isCalibration: nextIsCalibration,
                 feedback: 'success',
-                stats: {
-                    ...prev.stats,
-                    goSuccess: prev.stats.goSuccess + (type === 'go' ? 1 : 0),
-                    nogoSuccess: prev.stats.nogoSuccess + (type === 'nogo' ? 1 : 0),
-                    reactionTimes: reactionTime ? [...prev.stats.reactionTimes, reactionTime] : prev.stats.reactionTimes
-                }
+                stats: nextStats
             };
         });
     };
@@ -226,7 +269,6 @@ export const useGameEngine = () => {
     const startGame = useCallback((startLevel?: number) => {
         audioController.playSound('success'); // プレイ開始音
         setGameState(prev => {
-            const isRestart = prev.isGameOver;
             let newLevel = prev.level;
             let newTargetLevel = prev.targetLevel;
             let newIsCalibration = prev.isCalibration;
@@ -241,23 +283,20 @@ export const useGameEngine = () => {
                     newTargetLevel = startLevel;
                     newIsCalibration = false;
                 }
-            } else if (isRestart) {
-                newLevel = 1;
-                newTargetLevel = 1;
-                newIsCalibration = false;
             }
 
             return {
                 ...prev,
                 isPlaying: true,
                 isGameOver: false,
+                clearStatus: null,
                 progress: 0,
                 currentRound: 1,
                 feedback: null,
                 level: newLevel,
                 targetLevel: newTargetLevel,
                 isCalibration: newIsCalibration,
-                stats: isRestart || (startLevel !== undefined) ? { ...initialStats } : prev.stats
+                stats: { ...initialStats }
             };
         });
         bagRef.current = [];
@@ -270,13 +309,90 @@ export const useGameEngine = () => {
         }, 1000);
     }, [scheduleNextStimulus]);
 
+    const proceedToNextLevel = useCallback(() => {
+        audioController.playSound('success');
+        setGameState(prev => {
+            const nextBaseline = calculateMedianRT(prev.stats.reactionTimes);
+            return {
+                ...prev,
+                level: prev.level < 9 ? prev.level + 1 : 9,
+                targetLevel: prev.level < 9 ? prev.level + 1 : 9,
+                isCalibration: false,
+                isPlaying: true,
+                isGameOver: false,
+                clearStatus: null,
+                progress: 0,
+                currentRound: 1,
+                feedback: null,
+                stats: { ...initialStats, baselineMedianRT: nextBaseline }
+            };
+        });
+        hasReactedRef.current = false;
+        bagRef.current = [];
+        cleanupTimers();
+        nextStageTimerRef.current = window.setTimeout(scheduleNextStimulus, 1000);
+    }, [scheduleNextStimulus]);
+
+    const restartGame = useCallback(() => {
+        audioController.playSound('success');
+        setGameState(prev => {
+            return {
+                ...prev,
+                isPlaying: true,
+                isGameOver: false,
+                clearStatus: null,
+                progress: 0,
+                currentRound: 1,
+                feedback: null,
+                stats: { ...initialStats, baselineMedianRT: prev.stats.baselineMedianRT }
+            };
+        });
+        hasReactedRef.current = false;
+        bagRef.current = [];
+        cleanupTimers();
+        nextStageTimerRef.current = window.setTimeout(scheduleNextStimulus, 1000);
+    }, [scheduleNextStimulus]);
+
     const stopGame = useCallback(() => {
-        setGameState(prev => ({ ...prev, isPlaying: false, isStimulusVisible: false, isGameOver: true }));
+        setGameState(prev => ({ ...prev, isPlaying: false, isStimulusVisible: false, isGameOver: true, clearStatus: 'abort' }));
         cleanupTimers();
         isInputValidRef.current = false;
     }, []);
 
     const quitToTitle = useCallback(() => {
+        setGameState(prev => {
+            if (prev.isCalibration) {
+                return {
+                    level: 1,
+                    targetLevel: 1,
+                    isCalibration: false,
+                    progress: 0,
+                    maxProgress: 10,
+                    currentRound: 1,
+                    isPlaying: false,
+                    isGameOver: false,
+                    clearStatus: null,
+                    stimulus: null,
+                    isStimulusVisible: false,
+                    feedback: null,
+                    stats: { ...initialStats }
+                };
+            } else {
+                return {
+                    ...prev,
+                    isPlaying: false,
+                    isGameOver: true,
+                    clearStatus: 'abort',
+                };
+            }
+        });
+        bagRef.current = [];
+        hasReactedRef.current = false;
+        cleanupTimers();
+        isInputValidRef.current = false;
+    }, []);
+
+    const resetToTitle = useCallback(() => {
         setGameState({
             level: 1,
             targetLevel: 1,
@@ -286,6 +402,7 @@ export const useGameEngine = () => {
             currentRound: 1,
             isPlaying: false,
             isGameOver: false,
+            clearStatus: null,
             stimulus: null,
             isStimulusVisible: false,
             feedback: null,
@@ -322,8 +439,11 @@ export const useGameEngine = () => {
     return {
         gameState,
         startGame,
+        proceedToNextLevel,
+        restartGame,
         stopGame,
         quitToTitle,
+        resetToTitle,
         handleTap
     };
 };

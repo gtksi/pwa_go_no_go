@@ -16,6 +16,7 @@ export interface GameStats {
     nogoSuccess: number;
     missCount: number;       // Goが出たのに押さなかった
     falseAlarmCount: number; // No-Goが出たのに押した
+    baselineMedianRT: number | null;
 }
 
 export interface GameState {
@@ -27,6 +28,7 @@ export interface GameState {
     currentRound: 1 | 2;
     isPlaying: boolean;
     isGameOver: boolean;
+    clearStatus: 'clear' | 'gameOver' | 'abort' | null;
     stimulus: StimulusDefinition | null;
     isStimulusVisible: boolean;
     feedback: 'success' | 'miss' | 'falseAlarm' | null;

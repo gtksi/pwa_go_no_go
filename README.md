@@ -33,15 +33,27 @@ From Level 5 onwards, the Stroop task rules are introduced to increase cognitive
 
 ## 🆕 Update History (更新履歴)
 
-### 2026-02-24
+### 2026-02-24 (Log & Stats Update)
+* **Precise Reaction Time Filtering**: Anticipatory taps (Reaction Time < 150ms) are now excluded from performance calculations to ensure accurate cognitive measurements.
+* **Baseline RT & Interference Cost**: 
+  * Completing a level or the calibration phase accurately registers a **Baseline Median RT**.
+  * From Level 5+ (Stroop tasks), the **Interference Cost** is calculated and displayed, measuring the cognitive delay caused by conflicting stimuli.
+* **Error Classification & Response Bias**:
+  * Errors are explicitly tracked as **Omission** (miss/遅延) and **Commission** (false alarm/誤タップ).
+  * **Response Bias** is evaluated based on the error ratio, providing psychological feedback (e.g., Impulsive vs. Inattentive).
+* **Integrated Result Screen**:
+  * A completely redesigned, dynamic result screen displays Level Progress, Speed Metrics (Median RT, Interference Cost), Accuracy, and Response Bias evaluations.
+  * Properly distinguishes between Level Clear, Game Over, and Aborted states.
+
+### 2026-02-24 (Previous Update)
 * **Level Selection**: Added the ability to choose a starting level from the title screen.
 * **Calibration Phase (準備運動)**: Automatically inserts a 1-round Level 1 "warm-up" phase when starting from Level 2 or higher to establish a baseline reaction speed.
 * **Feedback UX Enhancements**:
   * **Omission Error (Miss/遅延)**: The target fades out silently, representing a lapse in attention.
   * **Commission Error (False Alarm/誤タップ)**: Triggers a screen shake, local burst effect, and a dull "thud" sound, representing impulsive action.
 * **Advanced Logging**:
-  * Reaction Times (RT) are now calculated using the **Median** instead of the Mean to exclude outliers.
-  * The result screen now categorizes errors into Omission and Commission.
+  * Reaction Times (RT) are calculated using the **Median** instead of the Mean to exclude outliers.
+  * The result screen initially categorizes errors into Omission and Commission.
 
 ## 🛠️ Development Setup
 

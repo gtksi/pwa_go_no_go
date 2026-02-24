@@ -5,7 +5,7 @@ import { ResultScreen } from './components/ResultScreen';
 import { useGameEngine } from './hooks/useGameEngine';
 
 function App() {
-  const { gameState, startGame, quitToTitle, handleTap } = useGameEngine();
+  const { gameState, startGame, proceedToNextLevel, restartGame, quitToTitle, resetToTitle, handleTap } = useGameEngine();
   const [selectedLevel, setSelectedLevel] = useState<number>(1);
 
   // 背景色のフィードバックアニメーション用
@@ -16,7 +16,7 @@ function App() {
     return 'bg-slate-900';
   };
 
-  const isTitleScreen = gameState.level === 1 && gameState.targetLevel === 1 && gameState.progress === 0 && gameState.currentRound === 1 && !gameState.isCalibration;
+  const isTitleScreen = !gameState.isPlaying && !gameState.isGameOver && gameState.level === 1 && gameState.targetLevel === 1 && gameState.progress === 0 && gameState.currentRound === 1 && !gameState.isCalibration;
 
   return (
     <div
@@ -71,8 +71,10 @@ function App() {
       {/* Result Screen */}
       {gameState.isGameOver && (
         <ResultScreen
-          stats={gameState.stats}
-          onRestart={() => startGame(gameState.targetLevel)}
+          gameState={gameState}
+          onRestart={restartGame}
+          onNextLevel={proceedToNextLevel}
+          onTitle={resetToTitle}
         />
       )}
 
