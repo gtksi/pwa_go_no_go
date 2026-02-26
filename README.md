@@ -1,35 +1,35 @@
-# PWA Go/No-Go & Stroop Task Training
+# PWA Go/No-Go & ストループ課題トレーニング
 
-A Progressive Web App (PWA) designed for cognitive training, combining the classic Go/No-Go task with Stroop interference for advanced levels.
+認知力トレーニングのために設計されたプログレッシブウェブアプリ（PWA）。古典的なGo/No-Go課題と、高難易度レベルでのストループ干渉を組み合わせています。
 
-## 🎮 Game Rules & Basic Specifications
+## 🎮 ゲームのルールと基本仕様
 
-### 🎯 Objective
-Improve impulse control and cognitive flexibility by correctly responding to "Go" stimuli and inhibiting responses to "No-Go" stimuli.
+### 🎯 目的
+「Go」刺激に正しく反応し、「No-Go」刺激に対する反応を抑制することで、衝動のコントロールと認知的柔軟性を向上させます。
 
-### 🧠 Core Mechanics (Go/No-Go)
-* **Go Stimulus**: An indicator (e.g., a green circle or a specific shape). You must tap/click the screen as quickly as possible.
-* **No-Go Stimulus**: An indicator (e.g., a red cross or a different shape). You must **NOT** tap/click the screen.
-* **Input**: Tapping anywhere on the screen or pressing the spacebar.
+### 🧠 基本メカニクス (Go/No-Go)
+* **Go刺激**: 指示マーク（例: 緑の丸や特定の図形）。できるだけ早く画面をタップ/クリックします。
+* **No-Go刺激**: 指示マーク（例: 赤のバツや異なる図形）。画面をタップ/クリックしては**いけません**。
+* **入力方法**: 画面の任意の場所をタップするか、スペースキーを押します。
 
-### 🔄 Progression & Difficulty
-The game consists of multiple levels, with the difficulty naturally scaling up.
-* Each Level consists of 2 Rounds.
-* A Round consists of a set of 10 trials (stimulus presentations).
-* **Bag System**: To ensure controlled randomness, each block of 10 trials contains a guaranteed ratio of 8 Go stimuli to 2 No-Go stimuli (80% Go / 20% No-Go). This creates a strong "pre-potent" urge to respond, making the No-Go trials more challenging.
+### 🔄 進行と難易度
+ゲームは複数のレベルで構成され、難易度が自然に上がっていきます。
+* 各レベルは **2ラウンド** で構成されます。
+* 1ラウンドは **10回の試行（刺激の提示）** のセットです。
+* **バッグシステム**: ランダム性を制御するため、10回の試行ブロックには必ず「Go: 8回 / No-Go: 2回」の比率（Go 80% / No-Go 20%）が含まれます。これにより「反応したい」という強い衝動（優勢反応）が生まれ、No-Go試行がより難しくなります。
 
-#### Level Scaling
-As the level increases, the time limits become stricter:
-* **Stimulus Duration**: The amount of time the stimulus is visible decreases.
-* **Inter-Stimulus Interval (ISI)**: The pause between stimuli becomes shorter and more variable.
+#### レベルごとの変化
+レベルが上がるにつれて、時間制限が厳しくなります：
+* **刺激の表示時間**: 刺激が表示される時間が短くなります。
+* **刺激間隔 (ISI)**: 刺激と刺激の間の待機時間が短く、かつ不規則になります。
 
-### 🎨 Advanced Levels: Stroop Interference (Level 5+)
-From Level 5 onwards, the Stroop task rules are introduced to increase cognitive load.
-* Instead of simple shapes/colors, the stimulus might be a word (e.g., "RED", "GREEN", "BLUE").
-* The word itself will be painted in a color (which may or may not match the text).
-* **New Rule Example**: 
-  * "Go" if the **text color** matches the **word meaning** (Congruent).
-  * "No-Go" if the **text color** does NOT match the **word meaning** (Incongruent).
+### 🎨 上級レベル: ストループ干渉 (レベル5以降)
+レベル5以降では、認知負荷を高めるためにストループ課題のルールが導入されます。
+* 単純な図形や色ではなく、刺激が「単語」（例: "RED", "GREEN", "BLUE"）になります。
+* 単語自体が、テキストの意味とは異なる色で塗られている場合があります。
+* **新しいルールの例**:
+  * **文字の色**と**単語の意味**が一致している場合は「Go」（一致試行）。
+  * **文字の色**と**単語の意味**が一致していない場合は「No-Go」（不一致試行）。
 
 ## 🆕 Update History (更新履歴)
 
